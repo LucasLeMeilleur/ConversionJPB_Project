@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exécuter du code C</title>
+</head>
+<body>
+    <h1>Exécuter du Code C</h1>
+    <textarea id="code" rows="10" cols="50"></textarea><br><br>
+    <button onclick="executeCode()">Exécuter</button>
+    <pre id="output"></pre>
+
+    <script>
+        async function executeCode() {
+            const code = document.getElementById('code').value;
+
+            const response = await fetch('http://localhost:3000/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code }),
+            });
+
+            const result = await response.json();
+            document.getElementById('output').innerText = result.output || result.error;
+        }
+    </script>
+</body>
+</html>
