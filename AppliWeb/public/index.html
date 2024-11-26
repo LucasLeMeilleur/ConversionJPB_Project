@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exécuter du code C</title>
+</head>
+<body>
+    <h1>Exécuter du Code C</h1>
+    <textarea id="code" rows="10" cols="50"></textarea><br><br>
+    <button onclick="executeCode()">Exécuter</button>
+    <pre id="output"></pre>
+
+    <script>
+        async function executeCode() {
+            const code = document.getElementById('code').value;
+
+            try {
+                const response = await fetch('/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code }),
+                });
+
+                const result = await response.json();
+                document.getElementById('output').innerText = result.output || result.error;
+            } catch (error) {
+                document.getElementById('output').innerText = 'Erreur lors de la communication avec le serveur.';
+            }
+        }
+    </script>
+</body>
+</html>
