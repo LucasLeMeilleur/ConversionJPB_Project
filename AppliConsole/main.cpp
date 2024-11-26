@@ -6,7 +6,7 @@
 #include <thread>
 
 int main() {
-    conversion Convert;
+    Conversion Convert;
 
     // std::cout << "Conversion terminée !" << std::endl;
     // std::this_thread::sleep_for(std::chrono::seconds(2));

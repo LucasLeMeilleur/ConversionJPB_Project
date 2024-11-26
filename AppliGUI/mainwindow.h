@@ -24,6 +24,6 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    conversion *Convert;
+    Conversion *Convert;
 };
 #endif // MAINWINDOW_H

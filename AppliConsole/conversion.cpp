@@ -4,15 +4,15 @@
 #include <png.h>
 #include <jpeglib.h>
 
-conversion::conversion()
+Conversion_Impl::Conversion_Impl()
 {
 }
 
-conversion::~conversion()
+Conversion_Impl::~Conversion_Impl()
 {
 }
 
-bool conversion::read_bmp(const std::string &filename, int &width, int &height, std::vector<unsigned char> &pixels) {
+bool Conversion_Impl::read_bmp(const std::string &filename, int &width, int &height, std::vector<unsigned char> &pixels) {
     std::ifstream file(filename, std::ios::binary);
 
     if (!file.is_open()) {
@@ -61,7 +61,7 @@ bool conversion::read_bmp(const std::string &filename, int &width, int &height, 
     return true;
 }
 
-bool conversion::bmp_to_jpeg(const std::string &bmp_filename, const std::string &jpeg_filename, int quality) {
+bool Conversion_Impl::bmp_to_jpeg(const std::string &bmp_filename, const std::string &jpeg_filename, int quality) {
     int width, height;
     std::vector<unsigned char> pixels;
 
@@ -118,7 +118,7 @@ bool conversion::bmp_to_jpeg(const std::string &bmp_filename, const std::string 
     return true;
 }
 
-bool conversion::read_jpeg(const std::string &filename, int &width, int &height, std::vector<unsigned char> &pixels) {
+bool Conversion_Impl::read_jpeg(const std::string &filename, int &width, int &height, std::vector<unsigned char> &pixels) {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
 
@@ -154,7 +154,7 @@ bool conversion::read_jpeg(const std::string &filename, int &width, int &height,
     return true;
 }
 
-bool conversion::write_bmp(const std::string &filename, int width, int height, const std::vector<unsigned char> &pixels) {
+bool Conversion_Impl::write_bmp(const std::string &filename, int width, int height, const std::vector<unsigned char> &pixels) {
     std::ofstream file(filename, std::ios::binary);
     if (!file.is_open()) {
         std::cerr << "Erreur d'ouverture du fichier BMP : " << filename << std::endl;
@@ -193,7 +193,7 @@ bool conversion::write_bmp(const std::string &filename, int width, int height, c
     return true;
 }
 
-void conversion::convert_rgb_to_bgr(std::vector<unsigned char> &pixels, int width, int height) {
+void Conversion_Impl::convert_rgb_to_bgr(std::vector<unsigned char> &pixels, int width, int height) {
     int row_stride = width * 3; // Nombre d'octets par ligne (3 octets par pixel pour RGB)
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
@@ -203,7 +203,7 @@ void conversion::convert_rgb_to_bgr(std::vector<unsigned char> &pixels, int widt
     }
 }
 
-bool conversion::png_to_jpeg(const std::string& png_path, const std::string& jpeg_path, int quality) {
+bool Conversion_Impl::png_to_jpeg(const std::string& png_path, const std::string& jpeg_path, int quality) {
     FILE* infile = fopen(png_path.c_str(), "rb");
     FILE* outfile = fopen(jpeg_path.c_str(), "wb");
 
@@ -272,7 +272,7 @@ bool conversion::png_to_jpeg(const std::string& png_path, const std::string& jpe
     return true;
 }
 
-bool conversion::jpeg_to_png(const std::string& jpeg_path, const std::string& png_path) {
+bool Conversion_Impl::jpeg_to_png(const std::string& jpeg_path, const std::string& png_path) {
     FILE* infile = fopen(jpeg_path.c_str(), "rb");
     FILE* outfile = fopen(png_path.c_str(), "wb");
 
@@ -326,7 +326,7 @@ bool conversion::jpeg_to_png(const std::string& jpeg_path, const std::string& pn
     return true;
 }
 
-bool conversion::png_to_bmp(const std::string& png_path, const std::string& bmp_path) {
+bool Conversion_Impl::png_to_bmp(const std::string& png_path, const std::string& bmp_path) {
     // Ouvrir le fichier PNG en lecture
     FILE* fp = fopen(png_path.c_str(), "rb");
     if (!fp) {
@@ -436,7 +436,7 @@ bool conversion::png_to_bmp(const std::string& png_path, const std::string& bmp_
     return true;
 }
 
-bool conversion::bmp_to_png(const std::string& bmp_path, const std::string& png_path) {
+bool Conversion_Impl::bmp_to_png(const std::string& bmp_path, const std::string& png_path) {
     FILE* bmp_fp = fopen(bmp_path.c_str(), "rb");
     if (!bmp_fp) {
         std::cerr << "Erreur : Impossible d'ouvrir le fichier BMP." << std::endl;
@@ -541,7 +541,10 @@ bool conversion::bmp_to_png(const std::string& bmp_path, const std::string& png_
 
 }
 
-void conversion::ConvertJPGtoPNG(std::string Input, std::string Output){
+
+
+
+void Conversion_Impl::ConvertJPGtoPNG(std::string Input, std::string Output){
     if (jpeg_to_png(Input, Output)) {
         std::cout << "Conversion JPEG vers PNG réussie.\n";
     } else {
@@ -549,7 +552,7 @@ void conversion::ConvertJPGtoPNG(std::string Input, std::string Output){
     }
 }
 
-void conversion::ConvertPNGtoJPG(std::string Input, std::string Output){
+void Conversion_Impl::ConvertPNGtoJPG(std::string Input, std::string Output){
     if (png_to_jpeg(Input, Output, 90)) {
         std::cout << "Conversion PNG vers JPEG réussie.\n";
     } else {
@@ -557,7 +560,7 @@ void conversion::ConvertPNGtoJPG(std::string Input, std::string Output){
     }
 }
 
-void conversion::ConvertBMPtoJPG(std::string Input, std::string Output){
+void Conversion_Impl::ConvertBMPtoJPG(std::string Input, std::string Output){
     if (bmp_to_jpeg(Input, Output, 90)) {
         std::cout << "Conversion réussie !" << std::endl;
     } else {
@@ -565,7 +568,7 @@ void conversion::ConvertBMPtoJPG(std::string Input, std::string Output){
     }
 }
 
-void conversion::ConvertJPGtoBMP(std::string Input, std::string Output){
+void Conversion_Impl::ConvertJPGtoBMP(std::string Input, std::string Output){
     int width, height;
     std::vector<unsigned char> pixels;
 
@@ -584,7 +587,7 @@ void conversion::ConvertJPGtoBMP(std::string Input, std::string Output){
     }
 }
 
-void conversion::ConvertPNGtoBMP(std::string Input, std::string Output){
+void Conversion_Impl::ConvertPNGtoBMP(std::string Input, std::string Output){
      std::cout << "Conversion de PNG vers BMP..." << std::endl;
     if (png_to_bmp(Input, Output)) {
         std::cout << "PNG vers BMP réussi : " << Output << std::endl;
@@ -595,11 +598,31 @@ void conversion::ConvertPNGtoBMP(std::string Input, std::string Output){
 
 }
 
-void conversion::ConvertBMPtoPNG(std::string Input, std::string Output){
+void Conversion_Impl::ConvertBMPtoPNG(std::string Input, std::string Output){
+
     std::cout << "Conversion de BMP vers PNG..." << std::endl;
     if (bmp_to_png(Input, Output)) {
         std::cout << "BMP vers PNG réussi : " << Output << std::endl;
     } else {
         std::cerr << "Échec de la conversion BMP vers PNG." << std::endl;
     }
+}
+
+void Conversion::ConvertJPGtoBMP(std::string Input, std::string Output){
+    pimpl->ConvertJPGtoBMP(Input, Output);
+}
+void Conversion::ConvertBMPtoJPG(std::string Input, std::string Output){
+    pimpl->ConvertBMPtoJPG(Input, Output);
+}
+void Conversion::ConvertPNGtoJPG(std::string Input, std::string Output){
+    pimpl->ConvertPNGtoJPG(Input, Output);
+}
+void Conversion::ConvertJPGtoPNG(std::string Input, std::string Output){
+    pimpl->ConvertJPGtoPNG(Input, Output);
+}
+void Conversion::ConvertPNGtoBMP(std::string Input, std::string Output){
+    pimpl->ConvertPNGtoBMP(Input, Output);
+}
+void Conversion::ConvertBMPtoPNG(std::string Input, std::string Output){
+    pimpl->ConvertBMPtoPNG(Input, Output);
 }

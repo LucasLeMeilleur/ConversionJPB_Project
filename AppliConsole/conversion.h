@@ -10,7 +10,7 @@
 
 
 
-class conversion
+class Conversion_Impl
 {
 private:
     void convert_rgb_to_bgr(std::vector<unsigned char> &pixels, int width, int height);
@@ -25,17 +25,27 @@ private:
     bool bmp_to_png(const std::string& bmp_path, const std::string& png_path);
 
 public:
-    conversion(/* args */);
-    ~conversion();
+    Conversion_Impl(/* args */);
+    ~Conversion_Impl();
 
     void ConvertJPGtoBMP(std::string Input, std::string Output);
     void ConvertBMPtoJPG(std::string Input, std::string Output);
     void ConvertPNGtoJPG(std::string Input, std::string Output);
     void ConvertJPGtoPNG(std::string Input, std::string Output);
     void ConvertPNGtoBMP(std::string Input, std::string Output);
-    void ConvertBMPtoPNG(std::string Input, std::string Output);
-
-    
+    void ConvertBMPtoPNG(std::string Input, std::string Output);    
 };
 
-
+class Conversion{
+    private:
+        Conversion_Impl *pimpl;
+    public:    
+        inline Conversion() : pimpl(new Conversion_Impl()) {};
+        inline ~Conversion() { delete pimpl; };
+        void ConvertJPGtoBMP(std::string Input, std::string Output);
+        void ConvertBMPtoJPG(std::string Input, std::string Output);
+        void ConvertPNGtoJPG(std::string Input, std::string Output);
+        void ConvertJPGtoPNG(std::string Input, std::string Output);
+        void ConvertPNGtoBMP(std::string Input, std::string Output);
+        void ConvertBMPtoPNG(std::string Input, std::string Output);   
+};
