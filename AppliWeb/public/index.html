@@ -6,30 +6,66 @@
     <title>Exécuter du code C</title>
 </head>
 <body>
-    <h1>Exécuter du Code C</h1>
-    <textarea id="code" rows="10" cols="50"></textarea><br><br>
-    <button onclick="executeCode()">Exécuter</button>
-    <pre id="output"></pre>
+    
+    <h1>Uploader une Image</h1>
 
+    <!-- Formulaire d'upload de fichier -->
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="image" id="image" required><br><br>
+        <label for="extension-select">Choisissez une extension:</label>
+
+        <select name="extension" id="extension">
+        <optgroup label="-- Extensions --">
+        <option value="png">png</option>
+        <option value="jpg">jpg</option>
+        <option value="bmp">bmp</option>
+        </select>
+
+        <br><br>
+        <button type="submit">Convertir</button>
+    </form>    
+    <br>
+
+    <a href="/get?="><input type="button" value="Download" id="buttonDl"></a>
+    
+    <h2>Réponse du serveur :</h2>
+    <pre id="response"></pre>
+    
+    <br>
+    
+    <h1>https://live.codetogether.io/#/daec4214-835d-424c-aae7-73cd798a6174/JHYarioL9mi76PaFFECvCN</h1>
+    
     <script>
-        async function executeCode() {
-            const code = document.getElementById('code').value;
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Empêcher le rechargement de la page
 
+            const formData = new FormData();
+
+            const formatSelect = document.getElementById('extension');
+            console.log(formatSelect.value);
+            
+            if(formatSelect.value === ""){
+                document.getElementById('response').innerText = "Veuillez chosir une extension";
+                return;
+            }
+
+            formData.append('format', formatSelect.value);
+
+            formData.append('image', document.getElementById('image').files[0]);
             try {
-                const response = await fetch('/execute', {
+                
+                const response = await fetch('/upload', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code }),
+                    body: formData
                 });
 
                 const result = await response.json();
-                document.getElementById('output').innerText = result.output || result.error;
+                document.getElementById('response').innerText = `${result.message}`;
             } catch (error) {
-                document.getElementById('output').innerText = 'Erreur lors de la communication avec le serveur.';
+                console.error('Erreur détectée :', error);
+                document.getElementById('response').innerText = `Erreur : ${error.message}`;
             }
-        }
+        });
     </script>
 </body>
 </html>

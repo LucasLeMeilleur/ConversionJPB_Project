@@ -3,59 +3,136 @@ const bodyParser = require('body-parser');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const session = require('express-session');
 
+const uploadDir = path.join(__dirname, 'TempImg'); 
+const exePath = './Convert';
 const app = express();
 const port = 3000;
+let clientsConnectes = 0;
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Middleware pour parser les requêtes JSON
-app.use(bodyParser.json());
+app.use(session({
+    secret: 'votre_clé_secrète',  
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } 
+}));
 
-// Route pour servir le fichier HTML
+
+app.use((req, res, next) => {
+    
+    if (!req.session.clientId) {
+        
+        req.session.clientId = Date.now(); 
+        clientsConnectes++; 
+        console.log(`Nouveau client connecté. Nombre de clients: ${clientsConnectes}`);
+    }
+    console.log(`Client ${req.session.clientId} est connecté. Nombre de clients: ${clientsConnectes}`);
+    next();
+});
+
+
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Route pour exécuter le code C
-app.post('/execute', (req, res) => {
-    const code = req.body.code;
 
-    // Création de noms de fichiers temporaires uniques
-    const timestamp = Date.now();
-    const filename = `temp_${timestamp}.c`;
-    const outputFilename = `temp_${timestamp}.out`;
-
-    try {
-        // Écrire le code C dans un fichier temporaire
-        fs.writeFileSync(filename, code);
-
-        // Compiler le fichier C
-        exec(`gcc ${filename} -o ${outputFilename}`, (compileErr, stdout, stderr) => {
-            if (compileErr) {
-                // Supprimer le fichier temporaire s'il existe
-                fs.unlinkSync(filename);
-                return res.status(400).json({ error: `Compilation failed: ${stderr}` });
-            }
-
-            // Exécuter le programme compilé
-            exec(`./${outputFilename}`, (execErr, execStdout, execStderr) => {
-                // Nettoyer les fichiers temporaires
-                if (fs.existsSync(filename)) fs.unlinkSync(filename);
-                if (fs.existsSync(outputFilename)) fs.unlinkSync(outputFilename);
-
-                if (execErr) {
-                    return res.status(400).json({ error: `Execution failed: ${execStderr}` });
-                }
-
-                // Envoyer le résultat au client
-                res.json({ output: execStdout });
-            });
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'Une erreur interne est survenue.' });
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb){        
+        cb(null, "Input-"+req.session.clientId + path.extname(file.originalname));
     }
 });
 
-// Lancer le serveur
+function supprimerImagesParNom(dossier, prefixe) {
+    fs.readdir(dossier, (err, fichiers) => {
+        if (err) {
+            return console.error(`Erreur lors de la lecture du dossier : ${err.message}`);
+        }
+        fichiers.forEach((fichier) => {
+            if (fichier.startsWith(prefixe)) {
+                const cheminFichier = path.join(dossier, fichier);
+
+                fs.unlink(cheminFichier, (err) => {
+                    if (err) {
+                        console.error(`Erreur lors de la suppression de ${cheminFichier} : ${err.message}`);
+                    } else {
+                        console.log(`Fichier supprimé : ${cheminFichier}`);
+                    }
+                });
+            }
+        });
+    });
+}
+
+
+const upload = multer({ storage: storage });
+
+
+app.post('/upload', upload.single('image'), (req, res) => {
+    supprimerImagesParNom("TempImg", `Output-${req.session.clientId}`)
+    const format = req.body.format; 
+    const fileExtension = path.extname(req.file.originalname).substring(1);
+    if (!req.file) {
+        return res.status(400).json({ error: 'Aucune image téléchargée' });
+    }
+    const filePath = path.join(__dirname, 'TempImg', req.file.filename);
+    console.log(fileExtension);
+    console.log(format);
+    const argsExe = [fileExtension, format];
+    var args = [fileExtension, format];
+
+    console.log(`${exePath} ${argsExe.join(' ')}`);
+
+    exec(`${exePath} ${argsExe.join(' ')} ${req.session.clientId}`, args, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Erreur d'exécution : ${error.message}`);
+            
+            return res.status(400).json({erreur: error.message });
+        }
+        if (stderr) {
+            console.error(`Erreur (stderr) : ${stderr}`);
+
+            
+            return res.status(400).json({ erreur: stderr });
+        }
+        console.log(`Sortie : ${stdout}`);
+        return res.status(200).json({message : "Fichier uploadé !"});
+    });    
+});
+
+app.get('/get', (req, res) => {
+    var fileName, extensionTemp;
+    var trouver = false;
+    const extension = ["png", "bmp", "jpg"];
+    for (let i = 0; i < 3; i++) {
+        fileName = `Output-${req.session.clientId}.${extension[i]}`
+        if (fs.existsSync(path.join(__dirname, 'TempImg', fileName))) {
+            trouver = true;
+            extensionTemp = extension[i];
+            break;
+        } 
+    }
+    if(!trouver){
+        console.log("Aucune image trouvé");
+        return;
+    } 
+    const filePath = path.join(__dirname, 'TempImg', fileName);
+    res.download(filePath, `Output.${extensionTemp}` ,  (err) => {
+        if (err) {
+            console.error('Erreur lors de l\'envoi du fichier :', err);
+            res.status(500).send('Erreur lors du téléchargement.');
+        }
+    });
+});
+
+
 app.listen(port, '0.0.0.0', () => {
     console.log(`Serveur en cours d'exécution sur http://0.0.0.0:${port}`);
 });
