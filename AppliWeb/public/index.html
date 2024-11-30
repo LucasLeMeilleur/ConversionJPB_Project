@@ -1,71 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exécuter du code C</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript" src="js/index.js"></script>
+    <title>Convertisseur de fichier</title>
 </head>
+
 <body>
-    
-    <h1>Uploader une Image</h1>
 
-    <!-- Formulaire d'upload de fichier -->
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" name="image" id="image" required><br><br>
-        <label for="extension-select">Choisissez une extension:</label>
+    <header>
+        <div>
+            <h1 id="titre_Page"><span>Convertisseur d'image</span></h1>
+        </div>
+    </header>
 
-        <select name="extension" id="extension">
-        <optgroup label="-- Extensions --">
-        <option value="png">png</option>
-        <option value="jpg">jpg</option>
-        <option value="bmp">bmp</option>
-        </select>
 
-        <br><br>
-        <button type="submit">Convertir</button>
-    </form>    
-    <br>
+    <section>
+        <div id="DivFormul">
+            <div id="Formulaire_Conversion">
 
-    <a href="/get?="><input type="button" value="Download" id="buttonDl"></a>
-    
-    <h2>Réponse du serveur :</h2>
-    <pre id="response"></pre>
-    
-    <br>
-    
-    <h1>https://live.codetogether.io/#/daec4214-835d-424c-aae7-73cd798a6174/JHYarioL9mi76PaFFECvCN</h1>
-    
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Empêcher le rechargement de la page
+                <h1 id="Titre_Form">Uploader une Image</h1>
 
-            const formData = new FormData();
 
-            const formatSelect = document.getElementById('extension');
-            console.log(formatSelect.value);
-            
-            if(formatSelect.value === ""){
-                document.getElementById('response').innerText = "Veuillez chosir une extension";
-                return;
-            }
+                <!-- Formulaire d'upload de fichier -->
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <label id="labelButt" for="upload-img"><span>Choisir une image</span>
+                        <input type="file" name="upload-img" id="upload-img" style="display: none;"
+                            accept="image/png, image/bmp, image/jpeg" required><br><br>
+                    </label>
+                    <br>
+                    <label id="LabelExt" for="extension-select">Choisissez une extension:</label><br> <br>
+                    <select name="extension" id="extension" class="extension" required>
+                        <optgroup label="-- Extensions --">
+                            <option value="png">png</option>
+                            <option value="jpg">jpg</option>
+                            <option value="bmp">bmp</option>
+                    </select>
+                    <br><br>
+                    <button id="Convertir" type="submit">Convertir</button>
+                </form>
+                <br>
 
-            formData.append('format', formatSelect.value);
+                <a href="/get?="><input type="button" value="Download" id="buttonDl"></a>
 
-            formData.append('image', document.getElementById('image').files[0]);
-            try {
-                
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+                <h4>Réponse du serveur :</h4>
+                <pre id="response"></pre>
 
-                const result = await response.json();
-                document.getElementById('response').innerText = `${result.message}`;
-            } catch (error) {
-                console.error('Erreur détectée :', error);
-                document.getElementById('response').innerText = `Erreur : ${error.message}`;
-            }
-        });
-    </script>
+                <br>
+            </div>
+            <br>
+        </div>
+        <h1></h1>
+        <!-- Script upload au serveur -->
+        <script>
+            document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+                event.preventDefault(); // Empêcher le rechargement de la page
+
+                const formData = new FormData();
+
+                const formatSelect = document.getElementById('extension');
+                console.log(formatSelect.value);
+
+                if (formatSelect.value === "") {
+                    document.getElementById('response').innerText = "Veuillez chosir une extension";
+                    return;
+                }
+
+                formData.append('format', formatSelect.value);
+
+                formData.append('image', document.getElementById('upload-img').files[0]);
+                try {
+
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    document.getElementById('response').innerText = `${result.message}`;
+                } catch (error) {
+                    console.error('Erreur détectée :', error);
+                    document.getElementById('response').innerText = `Erreur : ${error.message}`;
+                }
+            });
+        </script>
+
+    </section>
+
+    <footer>
+        <div id="TopFooter">
+            <p>Developpé par :</p>
+        </div>
+
+        <div id="GaucheFooter">
+            <p>Lucas Pokrywa</p>
+            <p>Polonais très beau</p>
+        </div>
+        <div id="DroiteFooter">
+            <p>Dimitrije Ilic</p>
+            <p>Petit serbe très malicieux</p>
+        </div>
+    </footer>
 </body>
+
 </html>

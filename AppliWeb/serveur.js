@@ -5,12 +5,24 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const session = require('express-session');
+const commands = require("./commands.js");
+const readline = require("readline");
+
 
 const uploadDir = path.join(__dirname, 'TempImg'); 
 const exePath = './Convert';
 const app = express();
 const port = 3000;
 let clientsConnectes = 0;
+
+
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: "> "
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -22,10 +34,8 @@ app.use(session({
 }));
 
 
-app.use((req, res, next) => {
-    
-    if (!req.session.clientId) {
-        
+app.use((req, res, next) => {    
+    if (!req.session.clientId) {        
         req.session.clientId = Date.now(); 
         clientsConnectes++; 
         console.log(`Nouveau client connecté. Nombre de clients: ${clientsConnectes}`);
@@ -35,6 +45,7 @@ app.use((req, res, next) => {
 });
 
 
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -58,7 +69,6 @@ function supprimerImagesParNom(dossier, prefixe) {
         fichiers.forEach((fichier) => {
             if (fichier.startsWith(prefixe)) {
                 const cheminFichier = path.join(dossier, fichier);
-
                 fs.unlink(cheminFichier, (err) => {
                     if (err) {
                         console.error(`Erreur lors de la suppression de ${cheminFichier} : ${err.message}`);
@@ -91,19 +101,16 @@ app.post('/upload', upload.single('image'), (req, res) => {
     console.log(`${exePath} ${argsExe.join(' ')}`);
 
     exec(`${exePath} ${argsExe.join(' ')} ${req.session.clientId}`, args, (error, stdout, stderr) => {
-        if (error) {
+        if(error){
             console.error(`Erreur d'exécution : ${error.message}`);
-            
             return res.status(400).json({erreur: error.message });
         }
-        if (stderr) {
+        if(stderr){
             console.error(`Erreur (stderr) : ${stderr}`);
-
-            
             return res.status(400).json({ erreur: stderr });
         }
         console.log(`Sortie : ${stdout}`);
-        return res.status(200).json({message : "Fichier uploadé !"});
+        return res.status(200).json({message : "Fichier converti !"});
     });    
 });
 
@@ -120,14 +127,12 @@ app.get('/get', (req, res) => {
         } 
     }
     if(!trouver){
-        console.log("Aucune image trouvé");
-        return;
+        return res.status(400).json({message: "Image non trouvé"});
     } 
     const filePath = path.join(__dirname, 'TempImg', fileName);
     res.download(filePath, `Output.${extensionTemp}` ,  (err) => {
         if (err) {
-            console.error('Erreur lors de l\'envoi du fichier :', err);
-            res.status(500).send('Erreur lors du téléchargement.');
+            return res.status(400).json({message: 'Erreur lors du téléchargement.'});
         }
     });
 });
@@ -135,4 +140,25 @@ app.get('/get', (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Serveur en cours d'exécution sur http://0.0.0.0:${port}`);
+});
+
+console.log("Bienvenue dans la console Node.js !");
+console.log("Tapez 'help' pour voir les commandes disponibles.");
+rl.prompt();
+
+rl.on("line", (line) => {
+    const args = line.trim().split(" "); // Divise la commande et ses arguments
+    const command = args.shift();       // Récupère la commande
+    const handler = commands[command];  // Trouve la commande dans commands.js
+
+    if (handler) {
+        handler(...args); // Exécute la commande avec les arguments
+    } else {
+        console.log(`Commande inconnue : '${command}'. Tapez 'help' pour voir les commandes disponibles.`);
+    }
+
+    rl.prompt(); // Affiche de nouveau le prompt
+}).on("close", () => {
+    console.log("Console terminée.");
+    process.exit(0);
 });
