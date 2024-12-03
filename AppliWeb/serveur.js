@@ -142,7 +142,7 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`Serveur en cours d'exécution sur http://0.0.0.0:${port}`);
 });
 
-console.log("Bienvenue dans la console Node.js !");
+console.log("Bienvenue dans la conso    le Node.js !");
 console.log("Tapez 'help' pour voir les commandes disponibles.");
 rl.prompt();
 
